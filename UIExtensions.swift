@@ -32,3 +32,24 @@ extension UIResponder {
         return String(describing: self)
     }
 }
+
+extension UIImage {
+    func resize(size: CGSize) -> UIImage? {
+        UIGraphicsBeginImageContext(size)
+        
+        self.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        
+        return resizedImage
+    }
+    
+    var path: URL {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {fatalError("Error getting documents directory")
+    }
+        
+        return documentsDirectory.appendingPathComponent("image")
+    }
+}
