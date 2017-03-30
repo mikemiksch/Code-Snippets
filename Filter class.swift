@@ -1,6 +1,6 @@
-import UIKit
+//For use with an enum of filters, but handy for dealing with CIContext and returning a UIImage
 
-//For use with an enum of different CIFilters
+import UIKit
 
 enum FilterName : String {
     case vintage = "CIPhotoEffectTransfer"
@@ -8,14 +8,32 @@ enum FilterName : String {
     case sepia = "CISepiaTone"
     case comic = "CIComicEffect"
     case blur = "CIMotionBlur"
-    
+    case posterize = "CIColorPosterize"
+    case invert = "CIColorInvert"
+    case fade = "CIPhotoEffectFade"    
+}
+
 }
 
 typealias FilterCompletion = (UIImage?) -> ()
 
 class Filters {
     
-    static var originalImage = #imageLiteral(resourceName: "")
+    static let shared = Filters()
+    
+    static var originalImage = #imageLiteral(resourceName: "Robot Unicorn")
+    
+    static var history = [originalImage]
+    
+    static var ciContext: CIContext {
+        let options = [kCIContextWorkingColorSpace : NSNull()]
+        let eaglContext = EAGLContext(api: .openGLES2)!
+        return CIContext(eaglContext: eaglContext, options: options)
+    }
+    
+    private init() {
+        
+    }
     
     class func filter(name: FilterName, image: UIImage, completion: @escaping FilterCompletion) {
         OperationQueue().addOperation {
@@ -24,12 +42,7 @@ class Filters {
             
             let coreImage = CIImage(image: image)
             filter.setValue(coreImage, forKey: kCIInputImageKey)
-            
-            //GPU Context
-            let options = [kCIContextWorkingColorSpace : NSNull()]
-            guard let eaglContext = EAGLContext(api: .openGLES2) else { fatalError("Failed to create EAGLContext") }
-            
-            let ciContext = CIContext(eaglContext: eaglContext, options: options)
+
             
             //Get final image using GPU
             
@@ -39,7 +52,6 @@ class Filters {
                 
                 let finalImage = UIImage(cgImage: cgImage)
                 history.append(finalImage)
-                print(history)
                 OperationQueue.main.addOperation {
                     completion(finalImage)
                 }
